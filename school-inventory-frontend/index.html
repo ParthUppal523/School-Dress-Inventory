@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Dress Inventory Management</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Navigation -->
+        <nav class="nav">
+            <div class="nav-container">
+                <h1 class="nav-title">Hoshiar Ranjit School Dress Inventory</h1>
+                <div class="nav-buttons">
+                    <button class="btn btn--outline nav-btn" onclick="showView('dashboard')" id="dashboardBtn">Dashboard</button>
+                    <button class="btn btn--outline nav-btn" onclick="showView('inward')" id="inwardBtn">Inward</button>
+                    <button class="btn btn--outline nav-btn" onclick="showView('outward')" id="outwardBtn">Outward</button>
+                    <button class="btn btn--outline nav-btn" onclick="showView('history')" id="historyBtn">History</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Dashboard View -->
+        <div id="dashboardView" class="view active">
+            <div class="container">
+                <div class="dashboard-header">
+                    <h2>Inventory Dashboard</h2>
+                    <div class="dashboard-actions">
+                        <button class="btn btn--primary" onclick="generateAllBarcodes()">Generate Barcodes</button>
+                        <button class="btn btn--secondary" onclick="showStockView()">Stock View</button>
+                        <button class="btn btn--secondary" onclick="exportData()">Export Data</button>
+                    </div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value" id="totalItems">0</div>
+                        <div class="metric-label">Total Items</div>
+                        <div class="metric-trend up">↑</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="lowStockItems">0</div>
+                        <div class="metric-label">Low Stock Items</div>
+                        <div class="metric-trend down">↓</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="avgInwardRate">₹0</div>
+                        <div class="metric-label">Avg Inward Rate</div>
+                        <div class="metric-trend up">↑</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="avgSellingRate">₹0</div>
+                        <div class="metric-label">Avg Selling Rate</div>
+                        <div class="metric-trend up">↑</div>
+                    </div>
+                    <div class="metric-card success">
+                        <div class="metric-icon">💰</div>
+                        <div class="metric-value" id="totalSales">₹0</div>
+                        <div class="metric-label">Total Sales</div>
+                        <div class="metric-sublabel">Actual Revenue</div>
+                        <div class="metric-trend up">↑</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">📦</div>
+                        <div class="metric-value" id="totalStockValue">₹0</div>
+                        <div class="metric-label">Stock Value</div>
+                        <div class="metric-sublabel">Inventory Worth</div>
+                        <div class="metric-trend up">↑</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="profitPotential">₹0</div>
+                        <div class="metric-label">Profit Potential</div>
+                        <div class="metric-trend up">↑</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="profitEarned">0.00</div>
+                        <div class="metric-label">Profit Earned</div>
+                        <div class="metric-trend up">↑</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-content">
+                    <div class="chart-section">
+                        <div class="card">
+                            <div class="card__body">
+                                <h3>Stock Distribution</h3>
+                                <div class="chart-container" style="height: 300px;">
+                                    <canvas id="stockChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="inventory-grid">
+                        <div class="card">
+                            <div class="card__body">
+                                <h3>Current Inventory</h3>
+                                <div id="inventoryList" class="inventory-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Additions -->
+                <div id="recentAdditions" class="recent-additions" style="display: none;">
+                    <h4>Recent Additions</h4>
+                    <div id="recentAdditionsList"></div>
+                </div>
+                
+                <!-- Stock View Section -->
+                <div id="stockViewSection" class="stock-view-section" style="display: none;">
+                    <div class="card">
+                        <div class="card__body">
+                            <div class="stock-view-header">
+                                <h3>Detailed Stock View</h3>
+                                <div class="stock-view-controls">
+                                    <input type="text" id="stockSearch" class="form-control" placeholder="Search items..." onkeyup="filterStockView()">
+                                    <select id="stockTypeFilter" class="form-control" onchange="filterStockView()">
+                                        <option value="">All Types</option>
+                                        <option value="Plain">Plain</option>
+                                        <option value="Dora">Dora</option>
+                                        <option value="Zipper">Zipper</option>
+                                    </select>
+                                    <button class="btn btn--outline" onclick="exportStockReport()">Export Report</button>
+                                </div>
+                            </div>
+                            <div class="stock-table-container">
+                                <table class="stock-table" id="stockTable">
+                                    <thead>
+                                        <tr>
+                                            <th onclick="sortStockTable(0)">Item Type <span class="sort-indicator">↕</span></th>
+                                            <th onclick="sortStockTable(1)">Color <span class="sort-indicator">↕</span></th>
+                                            <th onclick="sortStockTable(2)">Size <span class="sort-indicator">↕</span></th>
+                                            <th onclick="sortStockTable(3)">Stock Qty <span class="sort-indicator">↕</span></th>
+                                            <th onclick="sortStockTable(4)">Inward Rate <span class="sort-indicator">↕</span></th>
+                                            <th onclick="sortStockTable(5)">Selling Rate <span class="sort-indicator">↕</span></th>
+                                            <th onclick="sortStockTable(6)">Total Value <span class="sort-indicator">↕</span></th>
+                                            <th onclick="sortStockTable(7)">Profit Margin (%) <span class="sort-indicator">↕</span></th>
+                                            <th onclick="sortStockTable(8)">Barcode <span class="sort-indicator">↕</span></th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="stockTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inward View -->
+        <div id="inwardView" class="view">
+            <div class="container">
+                <h2>Inward Stock</h2>
+                <div class="input-method-selector">
+                    <button class="btn btn--outline method-btn active" onclick="setInputMethod('manual')" id="manualBtn">Manual</button>
+                    <button class="btn btn--outline method-btn" onclick="setInputMethod('scanner')" id="scannerBtn">Scanner</button>
+                    <button class="btn btn--outline method-btn" onclick="setInputMethod('audio')" id="audioBtn">Audio</button>
+                </div>
+                <div class="operation-form">
+                    <!-- Manual Input -->
+                    <div id="manualInput" class="input-section active">
+                        <form id="manualInwardForm" class="form-grid">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Dress Type</label>
+                                    <select class="form-control" id="dressType" onchange="updateColorOptions()">
+                                        <option value="">Select Type</option>
+                                        <option value="Plain">Plain</option>
+                                        <option value="Dora">Dora</option>
+                                        <option value="Zipper">Zipper</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Color</label>
+                                    <select class="form-control" id="dressColor" onchange="updateSizeOptions()">
+                                        <option value="">Select Color</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Size</label>
+                                    <select class="form-control" id="dressSize">
+                                        <option value="">Select Size</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Quantity <span class="required">*</span></label>
+                                    <input type="number" class="form-control" id="quantity" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Inward Rate (per unit) <span class="required">*</span></label>
+                                    <input type="number" class="form-control" id="inwardRate" min="0.01" step="0.01" required placeholder="Enter rate in rupees" oninput="calculateSellingRate()">
+                                    <small class="form-help">Cost price per unit for inventory valuation</small>
+                                    <div id="ratePreview" class="rate-preview" style="display: none;"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Selling Rate (per unit)</label>
+                                    <input type="number" class="form-control" id="sellingRate" min="0.01" step="0.01" required placeholder="Auto-suggested or enter manually">
+                                    <small class="form-help">Selling price per unit - auto-calculated with smart margin</small>
+                                    <div id="marginInfo" class="margin-info" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn--primary btn--full-width" onclick="submitInwardForm()">Add to Inventory</button>
+                            <button type="button" class="btn btn--outline" onclick="clearInwardForm()">Clear Form</button>
+                        </div>
+
+                    </div>
+
+
+                    <!-- Barcode Scanner Input -->
+                    <div id="scannerInput" class="input-section">
+                        <div class="scanner-container">
+                            <video id="video" autoplay playsinline></video>
+                            <canvas id="canvas" style="display: none;"></canvas>
+                            <div class="scanner-overlay">
+                                <div class="scanner-line"></div>
+                                <div class="scanner-guide">Position barcode within frame</div>
+                                <div class="scanner-status" id="scannerStatus">Camera not active</div>
+                            </div>
+                        </div>
+                        <div class="scanner-controls">
+                            <button class="btn btn--primary" onclick="startBarcodeScanner()" id="startScanBtn">Start Barcode Scanner</button>
+                            <button class="btn btn--secondary" onclick="stopBarcodeScanner()" id="stopScanBtn" style="display: none;">Stop Scanner</button>
+                        </div>
+                        <div class="manual-barcode-input">
+                            <label class="form-label">Or enter barcode manually:</label>
+                            <div class="barcode-manual-row">
+                                <input type="text" class="form-control" id="manualBarcode" placeholder="Enter barcode (e.g., P01S04)">
+                                <button class="btn btn--outline" onclick="processManualBarcode()">Lookup</button>
+                            </div>
+                        </div>
+                        <div id="scanResult" class="scan-result" style="display: none;"></div>
+                    </div>
+
+
+                    <!-- Audio Input -->
+                    <div id="audioInput" class="input-section">
+                        <div class="audio-container">
+                            <div class="audio-instructions">
+                                <p><strong>Enhanced Voice Commands:</strong></p>
+                                <p>• "Navy Blue 32 Plain 10 pieces inward rate 250 selling rate 300"</p>
+                                <p>• "Add Dora Red White 34-38 Set 5 pieces inward 900 selling 1062"</p>
+                                <p>• "Zipper Navy Blue Free Size 15 pieces inward 450 selling 504"</p>
+                                <p><strong>Note:</strong> Include both inward and selling rates for best results</p>
+                                <div id="browserSupport" class="browser-support"></div>
+                            </div>
+                            <button class="btn btn--primary audio-btn" onclick="startListening()" id="listenBtn">
+                                <span class="mic-icon">🎤</span> Start Listening
+                            </button>
+                            <div id="audioFeedback" class="audio-feedback" style="display: none;"></div>
+                            <div id="audioResult" class="audio-result" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Outward View -->
+        <div id="outwardView" class="view">
+            <div class="container">
+                <div class="card">
+                    <h2 class="card-title">Process Outward Stock</h2>
+                    <!-- Chat-GPT .............. 18 October, 2025 -->
+                    <form id="outward-form" class="form-grid">
+                        <!-- Row 1 -->
+                        <div class="select-boxes">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="outwardDressType">Dress Type *</label>
+                                    <select class="form-control" id="outwardDressType" required>
+                                        <option value="">Select Type</option>
+                                        <option value="Plain">Plain</option>
+                                        <option value="Dora">Dora</option>
+                                        <option value="Zipper">Zipper</option>
+                                    </select>
+                                </div>
+    
+                                <div class="form-group">
+                                    <label class="form-label" for="outwardDressColor">Color *</label>
+                                    <select class="form-control" id="outwardDressColor" required>
+                                        <option value="">Select Color</option>
+                                    </select>
+                                </div>
+    
+                                <div class="form-group">
+                                    <label class="form-label" for="outwardDressSize">Size *</label>
+                                    <select class="form-control" id="outwardDressSize" required>
+                                        <option value="">Select Size</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Row 2 -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="outwardQuantity">Quantity *</label>
+                                    <input type="number" class="form-control" id="outwardQuantity" min="1" required placeholder="Enter quantity to sell">
+                                    <small id="availableStock" style="color: #777; font-size: 0.9rem;">Available stock: —</small>
+                                </div>
+    
+                                <div class="form-group">
+                                    <label class="form-label" for="outwardSellingRate">Selling Rate (₹) *</label>
+                                    <input type="number" class="form-control" id="outwardSellingRate" step="0.01" min="0.01" required placeholder="Auto-filled from inventory">
+                                </div>
+    
+                                <div class="form-group">
+                                    <label class="form-label" for="discount">Discount (₹)</label>
+                                    <input type="number" class="form-control" id="discount" min="0" step="0.01" value="0" placeholder="Enter discount amount in rupees">
+                                </div>
+                            </div>
+
+                            <!-- Row 3 -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="outwardRemark">Remark</label>
+                                    <input type="text" class="form-control" id="outwardRemark" placeholder="Enter remark (optional)">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Add and Generate Buttons -->
+                    <div>
+                        <button type="button" class="btn" id="addItemBtn">➕ Add Item</button>
+                        <button type="button" class="btn btn--outline" id="generateInvoiceBtn" disabled>📄 Generate Invoice</button>
+                    </div>
+
+                    <!-- 🧾 Customer Details Popup Modal -->
+                    <div id="customerModal" class="modal">
+                        <div class="modal-content">
+                            <span class="closeBtn">&times;</span>
+                            <h2>🧍‍♂️ Enter Customer Details</h2>
+
+                            <label for="customerName">Name <span style="color:red;">*</span></label>
+                            <input type="text" id="customerName" placeholder="Enter customer name" required> 
+
+                            <label for="customerMobile">Mobile</label>
+                            <input type="tel" id="customerMobile" placeholder="Enter mobile number"> 
+
+                            <label for="customerEmail">Email</label>
+                            <input type="email" id="customerEmail" placeholder="Enter email (if mobile not available)"> 
+
+                            <label for="invoiceInternalRemark">Internal Remark</label>
+                            <textarea id="invoiceInternalRemark" rows="5" placeholder="Enter admin-only notes..."></textarea> 
+
+                            <button id="confirmCustomerBtn" class="btn">✅ Confirm Customer</button>
+                        </div>
+                    </div>
+
+
+                    <!-- Cart Table -->
+                    <div id="cartSection" style="margin-top: 1.5rem; display: none;">
+                        <h3>Items Added</h3>
+                        <table id="cartTable" class="cart-table">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Color</th>
+                                    <th>Size</th>
+                                    <th>Qty</th>
+                                    <th>Rate</th>
+                                    <th>Discount</th>
+                                    <th>Total</th>
+                                    <th>Remark</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History View -->
+        <div id="historyView" class="view">
+            <div class="container">
+                <h2>Transaction History</h2>
+                <div class="history-filters">
+                    <select class="form-control" id="filterType">
+                        <option value="all">All Transactions</option>
+                        <option value="inward">Inward Only</option>
+                        <option value="outward">Outward Only</option>
+                    </select>
+                    <input type="date" class="form-control" id="filterDate">
+                    <button class="btn btn--primary" onclick="filterHistory()">Filter</button>
+                </div>
+                <div class="history-list" id="historyList"></div>
+            </div>
+        </div>
+
+        <!-- Transaction Detail Modal -->
+        <div id="transactionDetailModal" class="modal">
+            <div class="modal-content">
+                <span class="closeBtn" onclick="closeTransactionDetailModal()">&times;</span>
+                <h2>Transaction Details</h2>
+                <div id="transactionDetailContent"></div>
+            </div>
+        </div>
+
+
+        <!-- Barcode Modal -->
+        <div id="barcodeModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Item Barcodes</h3>
+                    <button class="modal-close" onclick="closeBarcodeModal()">&times;</button>
+                </div>
+                <div class="modal-body" id="barcodeContainer">
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Generation Modal -->
+        <div id="invoiceModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Generate Invoice</h3>
+                    <button type="button" class="modal-close" onclick="closeInvoiceModal()">&times;</button>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="invoiceCustomerName">Customer Name *</label>
+                        <input type="text" class="form-control" id="invoiceCustomerName" required placeholder="Enter customer full name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="invoiceCustomerPhone">Phone Number *</label>
+                        <input type="tel" class="form-control" id="invoiceCustomerPhone" required placeholder="Enter 10-digit phone number">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="invoiceCustomerEmail">Email (Optional)</label>
+                        <input type="email" class="form-control" id="invoiceCustomerEmail" placeholder="Enter email address">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="button" class="btn" onclick="downloadInvoicePDF()">📄 Download PDF</button>
+                    <button type="button" class="btn btn--secondary" onclick="shareInvoice()">📱 Share Invoice</button>
+                    <button type="button" class="btn btn--outline" onclick="closeInvoiceModal()">❌ Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bill Modal -->
+        <div id="billModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Sales Bill</h3>
+                    <button class="modal-close" onclick="closeBillModal()">&times;</button>
+                </div>
+                <div class="modal-body" id="billContent">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn--primary" onclick="printBill()">Print</button>
+                    <button class="btn btn--secondary" onclick="shareBill()">Share</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat-GPT ................... 18 Octoer, 2025 -->
+
+    <!-- Hidden Printable Invoice Template -->
+    <!-- ===== INVOICE TEMPLATE (Hidden for PDF Generation) ===== -->
+    <!-- <div id="invoiceTemplate" style="display: none; font-family: 'Segoe UI', sans-serif; color: #333; padding: 30px; width: 800px; margin: auto; border: 1px solid #ccc; border-radius: 8px;">
+    <header style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #444; padding-bottom: 10px; margin-bottom: 20px;">
+        <div>
+        <h2 style="margin: 0; color: #222;">🧾 School Uniforms Invoice</h2>
+        <p style="margin: 0;">123 Main Street, City, India</p>
+        <p style="margin: 0;">Phone: +91-9876543210 | Email: sales@schoolwear.com</p>
+        </div>
+        <div style="text-align: right;">
+        <p><strong>Invoice No:</strong> <span id="invNumber"></span></p>
+        <p><strong>Date:</strong> <span id="invDate"></span></p>
+        </div>
+    </header>
+
+    <section style="margin-bottom: 20px;">
+        <h3 style="margin-bottom: 8px; border-bottom: 1px solid #aaa; display: inline-block;">Customer Details</h3>
+        <p><strong>Name:</strong> <span id="invCustomerName"></span></p>
+        <p><strong>Phone:</strong> <span id="invCustomerPhone"></span></p>
+        <p><strong>Email:</strong> <span id="invCustomerEmail"></span></p>
+    </section>
+
+    <section>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <thead>
+            <tr style="background: #f3f3f3; text-align: left;">
+            <th style="padding: 8px; border: 1px solid #ddd;">#</th>
+            <th style="padding: 8px; border: 1px solid #ddd;">Item</th>
+            <th style="padding: 8px; border: 1px solid #ddd;">Size</th>
+            <th style="padding: 8px; border: 1px solid #ddd;">Qty</th>
+            <th style="padding: 8px; border: 1px solid #ddd;">Rate (₹)</th>
+            <th style="padding: 8px; border: 1px solid #ddd;">Discount (₹)</th>
+            <th style="padding: 8px; border: 1px solid #ddd;">Total (₹)</th>
+            </tr>
+        </thead>
+        <tbody id="invItems"></tbody>
+        </table>
+    </section>
+
+    <footer style="text-align: right;">
+        <p><strong>Subtotal:</strong> <span id="invSubtotal"></span></p>
+        <p><strong>GST (18%):</strong> <span id="invGST"></span></p>
+        <p style="font-size: 1.2rem;"><strong>Grand Total:</strong> <span id="invGrand"></span></p>
+        <hr style="margin: 15px 0;">
+        <p style="text-align: center; font-size: 0.9rem; color: #555;">Thank you for your purchase!</p>
+    </footer>
+    </div> -->
+    
+    <!-- Updated Invoice On 19 October, 2025 -->
+
+    <div id="invoiceTemplate" style="display:none;">
+        <div id="invoiceContainer" style="max-width:800px;margin:auto;padding:20px;font-family:'Segoe UI',Arial,sans-serif;color:#333;">
+            <h2 style="text-align:center;color:#2b4eff;">School Uniform Invoice</h2>
+            <hr style="border:1px solid #2b4eff;margin:10px 0 20px 0;">
+            
+            <div id="ownerDetails" style="margin-bottom:10px;">
+            <p><strong>Owner:</strong> <span id="ownerName">ABC Uniforms</span></p>
+            <p><strong>Address:</strong> <span id="ownerAddress">123 Market Road, City</span></p>
+            <p><strong>Contact:</strong> <span id="ownerPhone">+91-9876543210</span></p>
+            </div>
+
+            <div id="customerInfo" style="margin-bottom:15px;">
+            <p><strong>Customer Name:</strong> <span id="custNameDisplay"></span></p>
+            <p><strong>Mobile:</strong> <span id="custMobileDisplay"></span></p>
+            <p><strong>Email:</strong> <span id="custEmailDisplay"></span></p>
+            <p><strong>Date:</strong> <span id="invoiceDate"></span></p>
+            </div>
+
+            <table id="invoiceTable" style="width:100%;border-collapse:collapse;margin-bottom:20px;"></table>
+
+            <p style="text-align:center;margin-top:20px;">Thank you for your purchase!</p>
+            <div style="text-align:center;margin-top:30px;">
+            <button id="downloadBtn">Download PDF</button>
+            <button id="shareBtn">Share Invoice</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+</html>
