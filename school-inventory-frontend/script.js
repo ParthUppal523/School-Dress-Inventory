@@ -3305,7 +3305,7 @@ function closeBillModal() {
 
 
 
-// Update to "Add to Cart" Feature by ChatGPT ... 19 October, 2025
+// Update to "Add to Cart" Feature ... 19 October, 2025
 
 let cartItems = [];
 
@@ -3860,7 +3860,6 @@ document.getElementById('outwardDressSize').addEventListener('change', function(
 
 //   return pdf;
 // }
-// Perplexity
 
 const { jsPDF } = window.jspdf;
 async function generatePDF() {
@@ -4046,7 +4045,7 @@ function fillInvoiceTemplate() {
   };
 }
 
-// Update History Section to view details of orders -- Perplexity
+// Update History Section to view details of orders 
 
 function showTransactionDetails(transactionId) {
     const transaction = transactions.find(t => t.id.toString() === transactionId.toString());
