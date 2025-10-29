@@ -17,7 +17,7 @@ let editingRow = null;
 // 1. Fetch all inventory data from backend
 async function loadInventory() {
     try {
-        const res = await fetch('http://localhost:5000/api/inventory');
+        const res = await fetch('http://school-dress-inventory-production.up.railway.app/api/inventory');
         if (!res.ok) throw new Error('Failed to fetch inventory');
         
         const data = await res.json();
@@ -59,7 +59,7 @@ async function loadTransactions() {
     try {
         console.log('🔄 Loading transactions from backend...');
         
-        const res = await fetch('http://localhost:5000/api/transactions');
+        const res = await fetch('http://school-dress-inventory-production.up.railway.app/api/transactions');
         if (!res.ok) {
             throw new Error(`HTTP ${res.status}: Failed to fetch transactions`);
         }
@@ -85,7 +85,7 @@ async function loadTransactions() {
 
 async function populateDropdowns() {
   try {
-    const res = await fetch('http://localhost:5000/api/inventory');
+    const res = await fetch('http://school-dress-inventory-production.up.railway.app/api/inventory');
     const inventory = await res.json();
 
     const typeSelect = document.getElementById('dressType');
@@ -1579,7 +1579,7 @@ async function processInwardStock(type, color, size, quantity, inwardRate, selli
 
         console.log('📤 Sending to backend:', payload);
 
-        const res = await fetch('http://localhost:5000/api/inventory/inward', {
+        const res = await fetch('http://school-dress-inventory-production.up.railway.app/api/inventory/inward', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -2476,7 +2476,7 @@ async function saveRowChanges(itemId, buttonElement) {
     
     try {
         // Send update to backend
-        const res = await fetch(`http://localhost:5000/api/inventory/${itemId}`, {
+        const res = await fetch(`http://school-dress-inventory-production.up.railway.app/api/inventory/${itemId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3517,7 +3517,7 @@ confirmCustomerBtn.addEventListener('click', async () => {
     console.log('📤 Processing cart with', cartItems.length, 'items...');
     
     for (const item of cartItems) {
-      const res = await fetch('http://localhost:5000/api/inventory/outward', {
+      const res = await fetch('http://school-dress-inventory-production.up.railway.app/api/inventory/outward', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -3584,7 +3584,7 @@ confirmCustomerBtn.addEventListener('click', async () => {
         <title>Invoice</title>
         <style>
           body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
             background: #f9fbff;
             margin: 20px;
             color: #333;
