@@ -2,6 +2,24 @@
 // Enhanced with persistent storage, unique barcodes, and comprehensive metrics
 
 // Application state
+// Check authentication
+function checkAuth() {
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    
+    if (!token) {
+        window.location.href = 'login.html';
+        return false;
+    }
+    
+    return true;
+}
+
+// Run auth check on page load
+if (!checkAuth()) {
+    // Will redirect to login
+}
+// -------------------------------------------------------------
+
 let currentView = 'dashboard';
 let currentInputMethod = 'manual';
 let inventory = [];

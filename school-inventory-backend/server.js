@@ -3,6 +3,10 @@ import express from 'express';
 import cors from 'cors';
 import inventoryRoutes from './routes/inventory.js';
 import transactionRoutes from './routes/transactions.js';
+import authRoutes from './routes/auth.js';
+
+app.use('/api/auth', authRoutes);
+
 
 const app = express();
 const PORT = process.env.PORT || 8080;
