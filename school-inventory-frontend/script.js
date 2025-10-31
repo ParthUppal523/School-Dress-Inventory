@@ -3687,9 +3687,9 @@ confirmCustomerBtn.addEventListener('click', async () => {
           <div class="shop-header">
             <div class="shop-logo">🏪 RP Uppal Hosiery</div>
             <div class="shop-address">
-              123 St. No. 3, Gandhi Nagar Market, Ludhiana<br>
-              Punjab - 123456<br>
-              Phone: +91 7678668848 | Email: store@example.com
+              St. No. 1, Surinder Nagar, Gandhi Nagar, Ludhiana<br>
+              Punjab - 141008<br>
+              Phone: +91 7678668848 | Email: sachinavi_2000@yahoo.com
             </div>
           </div>
           <h1>🧾 Tax Invoice</h1>
