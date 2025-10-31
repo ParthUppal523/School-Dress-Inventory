@@ -25,7 +25,7 @@ loginForm.addEventListener('submit', async (e) => {
     
     try {
         // Replace with your backend API endpoint
-        const response = await fetch('https://https://school-dress-inventory-production.up.railway.app//api/auth/login', {
+        const response = await fetch('https://school-dress-inventory-production.up.railway.app/api/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
