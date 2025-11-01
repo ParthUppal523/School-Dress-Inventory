@@ -19,9 +19,7 @@ if (!checkAuth()) {
     // Will redirect to login
 }
 // -------------------------------------------------------------
-if (res.ok) {
-  handleLoginSuccess();
-}
+
 
 
 let currentView = 'dashboard';

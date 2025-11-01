@@ -42,9 +42,16 @@ loginForm.addEventListener('submit', async (e) => {
             } else {
                 sessionStorage.setItem('authToken', data.token);
             }
-            
-            // Redirect to main app
+            // Show loading indicator
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.id = 'loadingOverlay';
+            loadingOverlay.innerHTML = `<div class="spinner"></div><p>Loading your dashboard...</p>`;
+            document.body.appendChild(loadingOverlay);
+
+            // Redirect after a short delay (lets spinner appear)
+            setTimeout(() => {
             window.location.href = 'index.html';
+            }, 700);
         } else {
             showError(data.message || 'Invalid username or password');
         }
