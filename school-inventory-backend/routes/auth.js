@@ -24,9 +24,13 @@ router.post('/login', async (req, res) => {
         
         const user = users[0];
         
-        // Compare password
-        const isValidPassword = await bcrypt.compare(password, user.password_hash);
-        
+        // Compare password (plaintext fallback for testing)
+        const dbPassword = user.password_hash || user.password;  // Support both column names
+        const isValidPassword =
+            dbPassword.startsWith('$2b$') || dbPassword.startsWith('$2a$')
+                ? await bcrypt.compare(password, dbPassword) // bcrypt hash
+                : password === dbPassword; // plain text
+
         if (!isValidPassword) {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
