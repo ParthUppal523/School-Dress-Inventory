@@ -102,6 +102,22 @@ async function loadTransactions() {
     }
 }
 
+async function loadMetrics() {
+  try {
+    const response = await fetch('https://school-dress-inventory-production.up.railway.app/api/metrics');
+    const data = await response.json();
+    
+    if (data.success) {
+      document.getElementById('profitPotential').innerText = `₹${data.profitPotential.toFixed(2)}`;
+      document.getElementById('profitEarned').innerText = `₹${data.profitEarned.toFixed(2)}`;
+    } else {
+      console.error("❌ Failed to load metrics:", data.message);
+    }
+  } catch (err) {
+    console.error("⚠️ Error loading metrics:", err);
+  }
+}
+
 // Function to handle what happens after successful login
 async function handleLoginSuccess() {
   console.log("✅ Login successful — loading dashboard...");
@@ -2850,6 +2866,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Initialize data and views
     await loadInventory();
     await loadTransactions();
+    await loadMetrics();
     showView('dashboard');
     
     // Initialize outward options
@@ -4180,12 +4197,26 @@ function showTransactionDetails(transactionId) {
                 <span>Net Total:</span>
                 <strong>₹${netTotal.toFixed(2)}</strong>
             </div>
-            ${transaction.type === 'outward' && transaction.profit !== undefined ? `
-                <div class="detail-row">
-                <span>Profit Earned:</span>
-                <strong class="text-success">₹${parseFloat(transaction.profit).toFixed(2)}</strong>
-                </div>
-            ` : ''}
+            // To show profit per order
+            ${transaction.type === 'outward' ? (() => {
+                // Compute profit dynamically if not already present
+                const inwardRate = parseFloat(transaction.item?.inwardRate) || 0;
+                const outwardRate = parseFloat(transaction.rate) || 0;
+                const qty = parseFloat(transaction.quantity) || 0;
+                const discountAmt = parseFloat(transaction.discount) || 0;
+                const computedProfit = (qty * outwardRate) - (qty * inwardRate) - discountAmt;
+
+                const profitToShow = transaction.profit !== undefined
+                    ? parseFloat(transaction.profit)
+                    : computedProfit;
+
+                return `
+                    <div class="detail-row">
+                        <span>Profit Earned:</span>
+                        <strong class="text-success">₹${profitToShow.toFixed(2)}</strong>
+                    </div>
+                `;
+            })() : ''}
             </div>
 
             ${transaction.remark ? `
