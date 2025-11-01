@@ -19,6 +19,10 @@ if (!checkAuth()) {
     // Will redirect to login
 }
 // -------------------------------------------------------------
+if (res.ok) {
+  handleLoginSuccess();
+}
+
 
 let currentView = 'dashboard';
 let currentInputMethod = 'manual';
@@ -98,6 +102,30 @@ async function loadTransactions() {
         console.error('❌ Error loading transactions:', err);
         showMessage('Could not load transaction history from server', 'error');
     }
+}
+
+// Function to handle what happens after successful login
+async function handleLoginSuccess() {
+  console.log("✅ Login successful — loading dashboard...");
+
+  // Optionally show a quick loader message
+  const messageBox = document.getElementById("messageBox");
+  if (messageBox) {
+    messageBox.innerText = "Loading your data...";
+    messageBox.style.display = "block";
+  }
+
+  // Small delay to render dashboard UI first
+  setTimeout(async () => {
+    try {
+      console.log("🔄 Fetching inventory and transactions...");
+      await Promise.all([loadInventory(), loadTransactions()]);
+      console.log("✅ All data loaded");
+      if (messageBox) messageBox.style.display = "none";
+    } catch (err) {
+      console.error("❌ Error loading data after login:", err);
+    }
+  }, 500); // half-second delay before heavy loading
 }
 
 
