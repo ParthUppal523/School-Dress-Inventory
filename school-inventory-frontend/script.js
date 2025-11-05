@@ -1758,7 +1758,17 @@ function updateDashboardMetrics() {
     // Calculate profit earned from outward transactions
     const profitEarned = transactions
     .filter(t => t.type === 'outward')
-    .reduce((sum, t) => sum + (parseFloat(t.profit) || 0), 0);    
+    .reduce((sum, t) => {
+        const inwardRate = parseFloat(t.inwardRate || t.item?.inwardRate) || 0;
+        const outwardRate = parseFloat(t.rate) || 0;
+        const qty = parseFloat(t.quantity) || 0;
+        const discountAmt = parseFloat(t.discount) || 0;
+        const profit =
+        t.profit !== undefined
+            ? parseFloat(t.profit)
+            : (qty * outwardRate) - (qty * inwardRate) - discountAmt;
+        return sum + profit;
+    }, 0);    
     
     // Update all dashboard elements with safe formatting
     document.getElementById('totalItems').textContent = totalItems.toString();
@@ -4197,8 +4207,8 @@ function showTransactionDetails(transactionId) {
                 <span>Net Total:</span>
                 <strong>₹${netTotal.toFixed(2)}</strong>
             </div>
-            // To show profit per order
-            ${transaction.type === 'outward' ? (() => {
+
+            ${transaction.type === 'outward' ? (() => { // To show profit per order
                 // Compute profit dynamically if not already present
                 const inwardRate = parseFloat(transaction.item?.inwardRate) || 0;
                 const outwardRate = parseFloat(transaction.rate) || 0;
