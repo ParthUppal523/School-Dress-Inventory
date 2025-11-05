@@ -1,7 +1,7 @@
 <h3>🎓 School Dress Inventory Management System</h3>
 
-**Tech Stack:** Node.js, Express.js, MySQL, HTML, CSS, JavaScript
-**Role:** Full-Stack Developer
+**Tech Stack:** Node.js, Express.js, MySQL, HTML, CSS, JavaScript <br>
+**Role:** Full-Stack Developer <br>
 **Deployment:** Backend (Render/Railway.app), Frontend (Netlify/Vercel)
 
 **Description:**
@@ -28,3 +28,10 @@ Built a complete inventory management web application for school uniform trackin
 
   <li>Delivered real-time visibility into inventory movement and profitability metrics.</li>
 </ul>
+
+
+<br>
+<hr>
+
+Full-stack Node.js + Express web app for automating uniform inventory operations, with real-time profit tracking, dynamic dashboards, and secure role-based access. 
+The stock inward mechanism via manual, audio and barcode scan inputs allow efficient management of inventory. The real-time profit tracking provides useful insight details on the go which is crucial for any businessman
